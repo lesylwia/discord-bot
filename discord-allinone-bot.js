@@ -340,6 +340,20 @@ client.once(Events.ClientReady, async (c) => {
 });
 
 client.on(Events.GuildMemberAdd, async (member) => {
+  if (!message.guild || message.author.bot) return;
+  if (!message.content) return;
+
+  const allowedChannelId = "1440433997967786179";
+
+  const hasLink = /(https?:\/\/|www\.|discord\.gg)/i.test(message.content);
+
+  // SADECE BU KANAL DIŞINDA ENGEL
+  if (message.channel.id !== allowedChannelId && hasLink) {
+    await message.delete().catch(() => {});
+    message.channel.send(`${message.author}, link paylaşımı yasak.`)
+      .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+  }
+});
   if (config.autoRoleId) {
     await member.roles.add(config.autoRoleId).catch(() => {});
   }
@@ -384,82 +398,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
   }
 });
 
-client.on(Events.MessageCreate, async (message) => {
-  if (!message.guild || message.author.bot) return;
-  const member = message.member;
 
-  if (isStaff(member)) {
-  // staff koruma filtresinden geçsin ama level alsın istiyorsan bunu kaldır
-}
-
-  const isMemberStaff = isStaff(member);
-
-if (!isMemberStaff && config.antiLink && containsBlockedLink(message.content)) {
-  await message.delete().catch(() => {});
-  await message.channel.send({
-    content: `${message.author}, link paylaşımı yasak.`
-  }).then((m) => setTimeout(() => m.delete().catch(() => {}), 5000)).catch(() => {});
-  logToChannel(message.guild, `🔗 Link engellendi: ${message.author.tag} | ${message.channel}`);
-  return;
-}
-
-if (!isMemberStaff && config.antiSwear && containsBadWord(message.content)) {
-  await message.delete().catch(() => {});
-  await message.channel.send({
-    content: `${message.author}, küfür yasak.`
-  }).then((m) => setTimeout(() => m.delete().catch(() => {}), 5000)).catch(() => {});
-  logToChannel(message.guild, `🤬 Küfür engellendi: ${message.author.tag} | ${message.channel}`);
-  return;
-}
-
-if (!isMemberStaff && config.antiSpam) {
-  const count = pushUserMessage(message.author.id);
-  if (count >= config.spam.maxMessages) {
-    const ok = await safeTimeout(member, config.spam.timeoutMs, 'Spam yapma');
-    await message.channel.send({
-      content: ok
-        ? `${message.author}, spam nedeniyle geçici susturma uygulandı.`
-        : `${message.author}, spam tespit edildi ama işlem uygulanamadı.`
-    }).then((m) => setTimeout(() => m.delete().catch(() => {}), 6000)).catch(() => {});
-
-    logToChannel(message.guild, `📛 Spam tespit edildi: ${message.author.tag} | timeout=${ok}`);
-    messageMap.set(message.author.id, []);
-  }
-}
-
-  if (config.levelEnabled) {
-    const cooldownKey = `${message.guild.id}-${message.author.id}`;
-    const now = Date.now();
-    const lastXp = xpCooldown.get(cooldownKey) || 0;
-
-    if (now - lastXp >= 15000) {
-      xpCooldown.set(cooldownKey, now);
-
-      const userData = getUserLevelData(message.author.id);
-      const gainedXp = Math.floor(Math.random() * 11) + 15;
-      userData.xp += gainedXp;
-
-      const needed = requiredXp(userData.level);
-      if (userData.xp >= needed) {
-        userData.xp -= needed;
-        userData.level += 1;
-
-        const levelUpMessage = `🎉 ${message.author} seviye atladı! Yeni level: **${userData.level}**`;
-
-        if (config.levelUpChannelId) {
-          const ch = message.guild.channels.cache.get(config.levelUpChannelId);
-          if (ch && ch.isTextBased()) {
-            ch.send({ content: levelUpMessage }).catch(() => {});
-          }
-        } else {
-          message.channel.send({ content: levelUpMessage }).catch(() => {});
-        }
-      }
-
-      saveLevels(levels);
-    }
-  }
-});
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (interaction.isButton()) {
