@@ -338,22 +338,8 @@ client.once(Events.ClientReady, async (c) => {
     console.error('Komut yükleme hatası:', err);
   }
 });
+ client.on(Events.GuildMemberAdd, async (member) => {
 
-client.on(Events.GuildMemberAdd, async (member) => {
-  if (!message.guild || message.author.bot) return;
-  if (!message.content) return;
-
-  const allowedChannelId = "1440433997967786179";
-
-  const hasLink = /(https?:\/\/|www\.|discord\.gg)/i.test(message.content);
-
-  // SADECE BU KANAL DIŞINDA ENGEL
-  if (message.channel.id !== allowedChannelId && hasLink) {
-    await message.delete().catch(() => {});
-    message.channel.send(`${message.author}, link paylaşımı yasak.`)
-      .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
-  }
-});
   if (config.autoRoleId) {
     await member.roles.add(config.autoRoleId).catch(() => {});
   }
@@ -366,13 +352,13 @@ client.on(Events.GuildMemberAdd, async (member) => {
 
   const now = Date.now();
   recentJoins.push(now);
+
   while (recentJoins.length && now - recentJoins[0] > config.raid.intervalMs) {
     recentJoins.shift();
   }
 
-  if (recentJoins.length >= config.raid.maxJoins) {
-    logToChannel(member.guild, `🚨 Olası raid uyarısı: Son ${config.raid.intervalMs / 1000} sn içinde ${recentJoins.length} giriş oldu.`);
-  }
+
+
 
   if (config.welcomeChannelId) {
     const ch = member.guild.channels.cache.get(config.welcomeChannelId);
@@ -396,7 +382,8 @@ client.on(Events.GuildMemberAdd, async (member) => {
       }).catch(console.error);
     }
   }
-});
+  });
+
 
 
 
@@ -734,6 +721,21 @@ client.on(Events.InteractionCreate, async (interaction) => {
       console.error('rolpanel hata:', err);
     }
     return;
+  }
+});
+client.on(Events.MessageCreate, async (message) => {
+  if (!message.guild || message.author.bot) return;
+  if (!message.content) return;
+
+  const allowedChannelId = "1440433997967786179";
+
+  const hasLink = /(https?:\/\/|www\.|discord\.gg)/i.test(message.content);
+
+  // SADECE BU KANAL DIŞINDA ENGEL
+  if (message.channel.id !== allowedChannelId && hasLink) {
+    await message.delete().catch(() => {});
+    message.channel.send(`${message.author}, link paylaşımı yasak.`)
+      .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
   }
 });
 
