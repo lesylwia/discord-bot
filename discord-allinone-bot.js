@@ -1,4 +1,7 @@
 require('dotenv').config();
+const allowedChannels = process.env.ALLOWED_CHANNELS
+  ? process.env.ALLOWED_CHANNELS.split(",")
+  : [];
 const fs = require('fs');
 const path = require('path');
 
