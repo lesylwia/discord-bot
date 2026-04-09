@@ -733,6 +733,7 @@ client.on(Events.MessageCreate, async (message) => {
   const allowedChannelId = "1440433997967786179";
 
   const hasLink = /(https?:\/\/|www\.|discord\.gg)/i.test(message.content);
+  if (message.author.id === ownerId) return
 
   // SADECE BU KANAL DIŞINDA ENGEL
   if (message.channel.id !== allowedChannelId && hasLink) {
