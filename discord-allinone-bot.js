@@ -1,4 +1,5 @@
 require('dotenv').config();
+const OWNER_ID = process.env.OWNER_ID;
 const allowedChannels = process.env.ALLOWED_CHANNELS
   ? process.env.ALLOWED_CHANNELS.split(",")
   : [];
@@ -733,7 +734,7 @@ client.on(Events.MessageCreate, async (message) => {
   const allowedChannelId = "1440433997967786179";
 
   const hasLink = /(https?:\/\/|www\.|discord\.gg)/i.test(message.content);
-  if (message.author.id === ownerId) return
+  if (message.author.id === OWNER_ID) return;
 
   // SADECE BU KANAL DIŞINDA ENGEL
   if (message.channel.id !== allowedChannelId && hasLink) {
